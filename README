@@ -9,3 +9,9 @@ Train Random Forest once you have enough labeled data
 Test predictions
     [python -m src.predict]
     Loads trained RF and predicts a letter using the example sensor measurements
+
+Git Commands:
+    git status
+    git add .
+    git commit -m "What changed"
+    git push
