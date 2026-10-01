@@ -1,0 +1,11 @@
+Connect ESP32 and run: [python -m src.collect_data]
+    Repeat this for the letters you want your model to recognize
+    Collect multiple independent trials for every letter
+
+Train Random Forest once you have enough labeled data
+    [python main.py]
+    This loads dataset, splits it, trains RF, evaluates it, and saves the trained model
+
+Test predictions
+    [python -m src.predict]
+    Loads trained RF and predicts a letter using the example sensor measurements
