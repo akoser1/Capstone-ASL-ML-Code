@@ -20,15 +20,38 @@ MODEL_PATH = MODEL_DIR / "random_forest.joblib"
     # Will know where RF is saved
     # .joblib is the trained model (can load this)
 
+# Flex sensors (11)
+FLEX_COLUMNS = [
+    f"flex_{i}" for i in range(1, 12)
+]
+
+# Contact sensors (5)
+CONTACT_COLUMNS = [
+    f"contact_{i}" for i in range (1, 6)
+]
+
+# BNO085 IMU (10)
+IMU_COLUMNS = [
+    "accel_x",
+    "accel_y",
+    "accel_z",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "quat_w",
+    "quat_x",
+    "quat_y",
+    "quat_z"
+]
+
 # Input features (change this)
 FEATURE_COLUMNS = [
-    "thumb",
-    "index",
-    "middle",
-    "ring",
-    "pinky"
+    FLEX_COLUMNS
+    + CONTACT_COLUMNS
+    + IMU_COLUMNS
 ]
-    # These are labeled columns in CSV
+
+NUM_FEATURES = len(FEATURE_COLUMNS)
 
 # Target variable
 TARGET_COLUMN = "letter"
