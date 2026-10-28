@@ -36,11 +36,21 @@ if __name__ == "__main__":
 
     # Example sensor readings (change this)
     sensor_values = [
-        420,
-        315,
-        510,
-        280,
-        390
+        # 11 flex sensors
+        1200, 1500, 1800, 1400, 1600,
+        1300, 1700, 1900, 1250, 1550, 1450,
+
+        # 5 contact sensors
+        1, 0, 1, 0, 0,
+
+        # Accelerometer X, Y, Z
+        0.0, 0.0, 9.81,
+
+        # Gyroscope X, Y, Z
+        0.0, 0.0, 0.0,
+
+        # Quaternion W, X, Y, Z
+        1.0, 0.0, 0.0, 0.0
     ]
 
     letter = predict_letter(

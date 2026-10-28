@@ -10,7 +10,10 @@ import math
 from .config import (
     DATA_PATH,
     SERIAL_PORT,
-    BAUD_RATE
+    BAUD_RATE,
+    FEATURE_COLUMNS,
+    FLEX_COLUMNS,
+    CONTACT_COLUMNS
 )
 
 
@@ -73,13 +76,7 @@ def collect_data():
 
         if not file_exists:
             writer.writerow([ # Change these headers
-                "thumb",
-                "index",
-                "middle",
-                "ring",
-                "pinky",
-                "letter",
-                "trial_id"
+                FEATURE_COLUMNS + ["letter", "trial_id"]
             ])
 
         count = 0
@@ -98,11 +95,29 @@ def collect_data():
                     for value in line.split(",")
                 ]
 
-                # We expect exactly TBD values
-                if len(values) != TBD:
+                # Check total number of sensor readings
+                if len(values) != len(FEATURE_COLUMNS):
                     print(
-                        f"Skipped: expected TBD values, got {len(values)}"
+                        f"Skipped:expected {len(FEATURE_COLUMNS)} "
+                        f"values, got {len(values)}"
                     )
+                    continue
+
+                # Validate flex sensors
+                flex_values = values[:len(FLEX_COLUMNS)]
+
+                if not all(0 <= value <= 4095 for value in flex_values):
+                    print("Skipped: flex value out of range")
+                    continue
+
+                # Validate contact sensors
+                start = len(FLEX_COLUMNS)
+                end = start + len(CONTACT_COLUMNS)
+
+                contact_values = values[start:end]
+
+                if not all(value in (0,1) for value in contact_values):
+                    print("Skipped: contact value must be 0 or 1")
                     continue
 
                 # Reject NaN or infinity
