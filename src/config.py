@@ -20,17 +20,17 @@ MODEL_PATH = MODEL_DIR / "random_forest.joblib"
     # Will know where RF is saved
     # .joblib is the trained model (can load this)
 
-# Flex sensors (11)
+# 11 Flex Sensors
 FLEX_COLUMNS = [
     f"flex_{i}" for i in range(1, 12)
 ]
 
-# Contact sensors (5)
+# 5 Contact Sensors
 CONTACT_COLUMNS = [
-    f"contact_{i}" for i in range (1, 6)
+    f"contact_{i}" for i in range(1, 6)
 ]
 
-# BNO085 IMU (10)
+# BNO085 IMU
 IMU_COLUMNS = [
     "accel_x",
     "accel_y",
@@ -44,12 +44,12 @@ IMU_COLUMNS = [
     "quat_z"
 ]
 
-# Input features (change this)
-FEATURE_COLUMNS = [
+# Combine all sensor columns
+FEATURE_COLUMNS = (
     FLEX_COLUMNS
     + CONTACT_COLUMNS
     + IMU_COLUMNS
-]
+)
 
 NUM_FEATURES = len(FEATURE_COLUMNS)
 
