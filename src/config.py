@@ -26,29 +26,14 @@ FLEX_COLUMNS = [
 ]
 
 # 5 Contact Sensors
-CONTACT_COLUMNS = [
-    f"contact_{i}" for i in range(1, 6)
-]
+CONTACT_COLUMNS = []
 
 # BNO085 IMU
-IMU_COLUMNS = [
-    "accel_x",
-    "accel_y",
-    "accel_z",
-    "gyro_x",
-    "gyro_y",
-    "gyro_z",
-    "quat_w",
-    "quat_x",
-    "quat_y",
-    "quat_z"
-]
+IMU_COLUMNS = []
 
 # Combine all sensor columns
 FEATURE_COLUMNS = (
     FLEX_COLUMNS
-    + CONTACT_COLUMNS
-    + IMU_COLUMNS
 )
 
 NUM_FEATURES = len(FEATURE_COLUMNS)
