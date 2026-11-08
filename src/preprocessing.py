@@ -19,10 +19,13 @@ def load_data():
 
     df = pd.read_csv(DATA_PATH)
 
-    if df[FEATURE_COLUMNS].isnull().any().any():
-        raise ValueError(
-            "Dataset contains missing sensor values."
-        )
+    df["trial_id"] = (
+        df["session"].astype(str)
+        + "_"
+        + df["trial"].astype(str)
+    )
+
+    df["label"] = df["label"].str.strip().str.upper()
 
     print("Dataset loaded successfully.")
     print("Dataset shape:", df.shape)

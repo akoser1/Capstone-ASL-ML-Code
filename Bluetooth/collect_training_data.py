@@ -123,10 +123,10 @@ async def main():
 
             while True:
                 label = input(
-                    "\nEnter ASL sign (A-Z), or Q to quit: "
+                    "\nEnter ASL sign (A-Z), or EXIT to quit: "
                 ).strip().upper()
 
-                if label == "Q":
+                if label == "EXIT":
                     break
 
                 if len(label) != 1 or label not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":

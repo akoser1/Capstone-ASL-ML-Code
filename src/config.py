@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
     # Goes up two parents to reach main project directory (ASL ML Code)
 
 # Dataset location
-DATA_PATH = BASE_DIR / "data" / "dataset.csv"
+DATA_PATH = BASE_DIR / "asl_training_data.csv"
     # Will know where to find measurements
 
 # Model storage
@@ -22,7 +22,9 @@ MODEL_PATH = MODEL_DIR / "random_forest.joblib"
 
 # 11 Flex Sensors
 FLEX_COLUMNS = [
-    f"flex_{i}" for i in range(1, 12)
+    "MC0", "MC1", "MC2", "MC3",
+    "MC4", "MC5", "MC6", "MC7",
+    "Direct1", "Direct2"
 ]
 
 # 5 Contact Sensors
@@ -39,7 +41,7 @@ FEATURE_COLUMNS = (
 NUM_FEATURES = len(FEATURE_COLUMNS)
 
 # Target variable
-TARGET_COLUMN = "letter"
+TARGET_COLUMN = "label"
     # This is a labeled column in CSV
 
 # Dataset splitting
