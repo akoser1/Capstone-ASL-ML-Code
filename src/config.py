@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
     # Goes up two parents to reach main project directory (ASL ML Code)
 
 # Dataset location
-DATA_PATH = BASE_DIR / "asl_training_data.csv"
+DATA_PATH = BASE_DIR / "asl_training_data_with_contacts.csv"
     # Will know where to find measurements
 
 # Model storage
@@ -20,23 +20,26 @@ MODEL_PATH = MODEL_DIR / "random_forest.joblib"
     # Will know where RF is saved
     # .joblib is the trained model (can load this)
 
-# 11 Flex Sensors
+# 10 Flex Sensors
 FLEX_COLUMNS = [
     "MC0", "MC1", "MC2", "MC3",
     "MC4", "MC5", "MC6", "MC7",
     "Direct1", "Direct2"
 ]
 
-# 5 Contact Sensors
-CONTACT_COLUMNS = []
+# 4 Contact Sensors
+CONTACT_COLUMNS = [
+    "C1C2",  # Thumb + Upper Middle
+    "C1C3",  # Thumb + Lower Middle
+    "C1C4",  # Thumb + Ring
+    "C1C5"   # Thumb + Pinky
+]
 
 # BNO085 IMU
 IMU_COLUMNS = []
 
 # Combine all sensor columns
-FEATURE_COLUMNS = (
-    FLEX_COLUMNS
-)
+FEATURE_COLUMNS = FLEX_COLUMNS + CONTACT_COLUMNS
 
 NUM_FEATURES = len(FEATURE_COLUMNS)
 

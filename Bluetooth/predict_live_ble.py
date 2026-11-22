@@ -8,18 +8,40 @@ from bleak import BleakScanner, BleakClient
 
 from src.config import MODEL_PATH, FEATURE_COLUMNS
 
-# Same Bluetooth settings as your collection script
+
+# ---------- Bluetooth settings ----------
 DEVICE_NAME = "ESP32-BLE"
 CHAR_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
-# Your glove currently has 10 flex sensors
+
+# ---------- Sensor configuration ----------
 NUM_FLEX = 10
+NUM_CONTACT = 4
+NUM_IMU = 7
 
 # ESP32 sends:
-# 10 flex readings + 1 contact mask + 7 IMU values
-EXPECTED_VALUES = 18
+# 10 flex readings
+# 4 contact readings (0 or 1)
+# 7 IMU readings
+EXPECTED_VALUES = NUM_FLEX + NUM_CONTACT + NUM_IMU
 
-# Use the last 5 predictions for smoothing
+# Model uses 10 flex + 4 contact = 14 features
+EXPECTED_FEATURES = NUM_FLEX + NUM_CONTACT
+
+# Contact order:
+# C1C2 = Thumb + Index
+# C1C3 = Thumb + Middle
+# C1C4 = Thumb + Ring
+# C1C5 = Thumb + Pinky
+
+SENSOR_COLUMNS = [
+    "MC0", "MC1", "MC2", "MC3",
+    "MC4", "MC5", "MC6", "MC7",
+    "Direct1", "Direct2",
+    "C1C2", "C1C3", "C1C4", "C1C5",
+]
+
+# Smooth the last 5 predictions
 prediction_history = deque(maxlen=5)
 
 
@@ -28,16 +50,32 @@ async def main():
 
     model = joblib.load(MODEL_PATH)
 
-    if len(FEATURE_COLUMNS) != NUM_FLEX:
+    # Verify model and configuration match the glove
+    if len(FEATURE_COLUMNS) != EXPECTED_FEATURES:
         raise ValueError(
-            "Your config.py must define exactly 10 flex features."
+            "config.py must define 14 features: "
+            "10 flex + 4 contact."
+        )
+
+    if list(FEATURE_COLUMNS) != SENSOR_COLUMNS:
+        raise ValueError(
+            "FEATURE_COLUMNS in config.py must match "
+            "the ESP32 sensor order."
+        )
+
+    if model.n_features_in_ != EXPECTED_FEATURES:
+        raise ValueError(
+            f"Trained model expects {model.n_features_in_} "
+            f"features, but the glove provides "
+            f"{EXPECTED_FEATURES}. Run python main.py "
+            f"to retrain."
         )
 
     print("Searching for ESP32...")
 
     device = await BleakScanner.find_device_by_name(
         DEVICE_NAME,
-        timeout=15
+        timeout=15,
     )
 
     if device is None:
@@ -52,39 +90,69 @@ async def main():
         nonlocal packet_count
 
         try:
-            # Convert BLE message into a list of values
+            # Decode comma-separated BLE packet
             values = data.decode("utf-8").strip().split(",")
 
             if len(values) != EXPECTED_VALUES:
                 print(
-                    f"Skipped packet: expected {EXPECTED_VALUES} "
-                    f"values, received {len(values)}"
+                    f"Skipped packet: expected "
+                    f"{EXPECTED_VALUES} values, "
+                    f"received {len(values)}"
                 )
                 return
 
-            # Extract only the first 10 flex sensor readings
+            # ---------- Flex sensors ----------
             flex_values = [
                 int(value)
                 for value in values[:NUM_FLEX]
             ]
 
-            if any(value < 0 or value > 4095 for value in flex_values):
+            # ---------- Contact sensors ----------
+            contact_values = [
+                int(value)
+                for value in values[
+                    NUM_FLEX:NUM_FLEX + NUM_CONTACT
+                ]
+            ]
+
+            # ---------- IMU ----------
+            # Parse IMU readings, but don't use them
+            # for prediction because the IMU is disabled.
+            imu_values = [
+                float(value)
+                for value in values[
+                    NUM_FLEX + NUM_CONTACT:
+                ]
+            ]
+
+            # ---------- Validate readings ----------
+            if any(
+                value < 0 or value > 4095
+                for value in flex_values
+            ):
                 return
 
-            # Create the same input format used for training
+            if any(
+                value not in (0, 1)
+                for value in contact_values
+            ):
+                return
+
+            # ---------- Build model input ----------
+            sensor_values = flex_values + contact_values
+
             X_live = pd.DataFrame(
-                [flex_values],
-                columns=FEATURE_COLUMNS
+                [sensor_values],
+                columns=SENSOR_COLUMNS,
             )
 
-            # Predict ASL letter
+            # ---------- Predict ----------
             prediction = model.predict(X_live)[0]
 
-            # Get Random Forest probability estimate
             probabilities = model.predict_proba(X_live)[0]
             confidence = max(probabilities)
 
-            # Smooth predictions
+            # ---------- Smooth predictions ----------
             prediction_history.append(prediction)
 
             stable_prediction = Counter(
@@ -93,7 +161,7 @@ async def main():
 
             packet_count += 1
 
-            # Print every 5th reading to avoid flooding terminal
+            # Print every 5th prediction
             if packet_count % 5 == 0:
                 print(
                     f"Predicted: {prediction} | "
